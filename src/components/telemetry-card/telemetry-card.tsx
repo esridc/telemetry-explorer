@@ -40,7 +40,6 @@ export class TelemetryCard {
   @Watch('configuration')
   async updateTelemetryData(newConfiguration) {
     if (!!this.configuration) {
-      console.debug('Updating Telemetry Data:', {current: this.configuration, incoming: newConfiguration});
       try {
         this.data = await this.fetchTelemetry(newConfiguration);
         console.debug('Telemetry Data:', this.data);
@@ -56,9 +55,9 @@ export class TelemetryCard {
         <calcite-card>
           <h2 slot="title">Card {this.cardId}</h2>
           
-          {this.configuration && this.renderTable(this.data)}
+          {!!this.configuration &&  !!this.data?.data && this.renderTable(this.data)}
           <code>
-            {this.configuration ? JSON.stringify(this.configuration, null, 2) : 'No configuration'}
+            {!!this.configuration ? JSON.stringify(this.configuration, null, 2) : 'No configuration'}
           </code>
         </calcite-card>
       </Host>
@@ -86,7 +85,7 @@ export class TelemetryCard {
     }
 
     rows.push(<calcite-table-row slot="table-header">{headers}</calcite-table-row>)
-    for (const row of data.data) {
+    for (const row of data?.data) {
       const cells = [
         <calcite-table-cell>{row['timestamp']}</calcite-table-cell>
       ]
