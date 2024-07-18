@@ -4,16 +4,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
-  <title>REPLACE_PROJECT_NAME</title>
+  <title>Telemetry Explorer (prototype)</title>
 
-  <script type="module" src="./build/REPLACE_PROJECT_NAME.esm.js"></script>
-  <script nomodule src="./build/REPLACE_PROJECT_NAME.js"></script>
+  <script type="module" src="./build/telemetry-explorer.esm.js"></script>
+  <script nomodule src="./build/telemetry-explorer.js"></script>
 
   <link
     rel="stylesheet"
     type="text/css"
     href="https://js.arcgis.com/calcite-components/2.8.0/calcite.css"
   />
+  <script type="module" src="./assets/hub-components/hub-components.esm.js"></script>
+  
 </head>
 
 <body>
@@ -29,18 +31,61 @@
   </style>
 
   <script>
-    // Dynamically add the component so we can set URL or object properties
-    const componentName = "REPLACE_PROJECT_NAME";
+    const environments = {
+        production: {
+          compassApiUrl: 'https://geoai-search-prototype.utils.hub.geocloud.com/api',
+          compassApiUrl2: 'http://localui.arcgis.com:8000/api',
 
-    const placeholderEl = document.getElementById("placeholder");
-    const componentEl = document.createElement( componentName );
+          clientId: 'zWjie69856WR6cWz',
+          portalUrl: 'https://www.arcgis.com',
+        },
+        qa: {
+          compassApiUrl: 'https://geoai-search-prototype.utils.hub.geocloud.com/api',
+          clientId: '2kAcJaj7GkBYg2Wp',
+          portalUrl: 'https://dc.mapsqa.arcgis.com',
+        },
+        dev: {
+          compassApiUrl: 'http://localui.arcgis.com:8000/api',
+          clientId: '2kAcJaj7GkBYg2Wp',
+          portalUrl: 'https://dc.mapsqa.arcgis.com',
+        },
+      };
+      const urlParams = new URL(window.location).searchParams;
+      const env = urlParams.get('env') || 'production';
+      const arcgisAuthOrigin = urlParams.get('arcgis-auth-origin');
+      const placeholderEl = document.getElementById('placeholder');
+      let assistantEl = null;
 
-    const urlParams = new URL(window.location).searchParams;
-    // Change for specific component properties
-    // componentEl.query = urlParams.get('query');
-    // componentEl.innerHTML = "Slot text";
+      function embedIdentity() {
+        // Identity management
+        const identityEl = document.createElement('arcgis-hub-identity');
+
+        identityEl.portalUrl = environments[env].portalUrl;
+        identityEl.clientId = environments[env].clientId;
+        identityEl.id = 'identity';
+        identityEl.origin = arcgisAuthOrigin;
+        console.log('identityEl', { portal: identityEl.portalUrl, clientId: identityEl.clientId });
+
+        // Remove the query strings
+        // const appUrl = window.location.href.split('?')[0];
+        identityEl.redirect = `${window.location.origin}/redirect.html`;
+        placeholderEl.appendChild(identityEl);
+      }
+
+    embedIdentity();
+    configureElement();
     
-    placeholderEl.appendChild(componentEl);
+    function configureElement() {
+      // Dynamically add the component so we can set URL or object properties
+      const componentName = "telemetry-dashboard";
+      const componentEl = document.createElement( componentName );
+
+      // Change for specific component properties
+      // componentEl.query = urlParams.get('query');
+      componentEl.innerHTML = "<h3 slot='header'>Usage Dashboard</h3>";
+      
+      placeholderEl.appendChild(componentEl);
+    }
   </script>
 </body>
 

@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+.wrapper {
+  display: flex;
+}
+.wrapper > div {
+  align-self: center;
+  margin-right: 10px;
+}
