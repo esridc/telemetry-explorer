@@ -68,13 +68,13 @@
 
         // Remove the query strings
         // const appUrl = window.location.href.split('?')[0];
-        identityEl.redirect = `${window.location.origin}/redirect.html`;
+        identityEl.redirect = `${window.location.href}redirect.html`;
         placeholderEl.appendChild(identityEl);
       }
 
     embedIdentity();
     configureElement();
-    
+
     function configureElement() {
       // Dynamically add the component so we can set URL or object properties
       const componentName = "telemetry-dashboard";
