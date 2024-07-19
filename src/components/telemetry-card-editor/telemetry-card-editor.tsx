@@ -1,4 +1,5 @@
 import { Component, Event, EventEmitter, Host, Listen, Prop, h } from '@stencil/core';
+import { buildSimpleDimensionFilters } from '@esri/telemetry-reporting-client';
 
 @Component({
   tag: 'telemetry-card-editor',
@@ -43,8 +44,17 @@ export class TelemetryCardEditor {
         default: 'page-views:count'
       },
       dimensions: {
-        type: 'string',
-        enum: ['', 'contentId', 'dimension2'],
+        type: "string",
+        // items: {
+        //   type: "string",
+        //   enum: ['', 'contentId', 'referrer',
+        //     'dimension1' , 'dimension2', 'dimension3' , 'dimension4', 
+        //     'dimension5' , 'dimension6', 'dimension7' , 'dimension8',
+        //     'dimension9' , 'dimension10', 'dimension11' , 'dimension12',
+        //     'dimension13' , 'dimension14', 'dimension15' , 'dimension16',
+        //     'dimension17' , 'dimension18', 'dimension19' , 'dimension20',
+        //   ]
+        // },
         default: ''
       },
       timeDimension: {
@@ -52,10 +62,19 @@ export class TelemetryCardEditor {
         enum: ["hour", "day", "week", "month"],
         default: "day",
       },
+      dimensionsFilterCategory: {
+        type: "string"
+      },
+      dimensionsFilterAction: {
+        type: "string"
+      },
+      dimensionsFilterLabel: {
+        type: "string"
+      },
       orderByName: {
             type: 'string',
-            enum: ["day", "page-views:count", "other-events:count"],
-            default: "day"
+            enum: ["page-views:count", "other-events:count", "hour", "day", "week", "month"],
+            default: "page-views:count"
           },
           orderByDirection: {
             type: 'string',
@@ -101,12 +120,7 @@ export class TelemetryCardEditor {
         "scope": "/properties/dimensions",
         "type": "Control",
         "options": {
-          "control": "hub-field-input-radio-group",
-          "labels": [
-            "None",
-            "Content ID",
-            "User Type"
-          ]
+          // "control": "hub-field-input-combobox"
         }
       },{
         "label": "timeDimension",
@@ -115,6 +129,21 @@ export class TelemetryCardEditor {
         "options": {
           "control": "hub-field-input-radio-group",
         }
+      },{
+        "label": "Category",
+        "scope": "/properties/dimensionsFilterCategory",
+        "type": "Control",
+        "options": {}
+      },{
+        "label": "Action",
+        "scope": "/properties/dimensionsFilterAction",
+        "type": "Control",
+        "options": {}
+      },{
+        "label": "Label",
+        "scope": "/properties/dimensionsFilterLabel",
+        "type": "Control",
+        "options": {}
       },{
         "label": "Order by Name",
         "scope": "/properties/orderByName",
@@ -138,6 +167,15 @@ export class TelemetryCardEditor {
   }
 
   private convertConfiguration(configuration) {
+    const query = {
+      category: configuration.dimensionsFilterCategory?.length > 0 ? configuration.dimensionsFilterCategory : null,
+      action: configuration.dimensionsFilterAction?.length > 0 ? configuration.dimensionsFilterAction : null,
+      label: configuration.dimensionsFilterAction?.length > 0 ? configuration.dimensionsFilterLabel : null
+    };
+    
+    const dimensionFilters = buildSimpleDimensionFilters(query);
+    console.debug('dimensionFilters', query, dimensionFilters, configuration);
+
     const newConfiguration:any = {
       scope: {
         hostname: configuration.hostname
@@ -154,7 +192,9 @@ export class TelemetryCardEditor {
       }]
     }
     if(!!configuration.dimensions && configuration.dimensions.length > 0) {
-      newConfiguration.dimensions = [configuration.dimensions]
+      newConfiguration.dimensions = configuration.dimensions.split(",")
+    } else {
+      newConfiguration.dimensionFilters = dimensionFilters;
     }
     return newConfiguration;
 
@@ -164,6 +204,7 @@ export class TelemetryCardEditor {
 
   @Listen('arcgisConfigurationEditorChange')
   async configurationChanged(event) {
+
     // const newConfiguration = await this.configurationEl.values;
     const newConfiguration = this.convertConfiguration(event.detail.values);
     
